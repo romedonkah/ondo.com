@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - A Pen by Static animation</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        /* CSS styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #ff5733, #ffda33);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background 1s;
+        }
+
+        .container {
+            text-align: center;
+            position: relative; /* Add position relative */
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            border: 3px solid black; /* Add border and set color to black */
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            border: 2px solid black; /* Set border color to black */
+            font-size: 3em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        .cell:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #fff;
+        }
+
+        .play-again {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-weight: bold;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: none; /* Initially hide */
+        }
+
+        .play-again:hover {
+            background-color: #45a049;
+        }
+
+        .blur {
+            filter: blur(5px); /* Apply blur effect */
+            pointer-events: none; /* Disable pointer events to prevent interaction */
+        }
+
+        /* Animation for background color change */
+        @keyframes changeBackground {
+            0% {
+                background-color: rgba(255, 87, 51, 0.8);
+                opacity: 0.8;
+            }
+            50% {
+                background-color: rgba(255, 218, 51, 0.8);
+                opacity: 0.5;
+            }
+            100% {
+                background-color: rgba(255, 87, 51, 0.8);
+                opacity: 0.8;
+            }
+        }
+
+        /* Smooth transition for background color */
+        body {
+            animation: changeBackground 5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tic Tac Toe</h1>
+        <div class="board">
+            <div class="cell" data-cell-index="0"></div>
+            <div class="cell" data-cell-index="1"></div>
+            <div class="cell" data-cell-index="2"></div>
+            <div class="cell" data-cell-index="3"></div>
+            <div class="cell" data-cell-index="4"></div>
+            <div class="cell" data-cell-index="5"></div>
+            <div class="cell" data-cell-index="6"></div>
+            <div class="cell" data-cell-index="7"></div>
+            <div class="cell" data-cell-index="8"></div>
+        </div>
+        <div class="status">Player X's turn</div>
+        <button class="play-again">Play Again</button>
+    </div>
+    <script>
+        // JavaScript code
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function setRandomBackgroundColor() {
+            const color1 = getRandomColor();
+            const color2 = getRandomColor();
+            document.body.style.backgroundColor = `linear-gradient(45deg, ${color1}, ${color2})`;
+        }
+
+        setRandomBackgroundColor();
+
+        const cells = document.querySelectorAll('.cell');
+        const status = document.querySelector('.status');
+        const playAgainBtn = document.querySelector('.play-again');
+
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let gameState = ['', '', '', '', '', '', '', '', ''];
+
+        const winConditions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+
+        function handleCellClick(event) {
+            const cellIndex = parseInt(event.target.getAttribute('data-cell-index'));
+            if (gameState[cellIndex] !== '' || !gameActive) return;
+            gameState[cellIndex] = currentPlayer;
+            event.target.textContent = currentPlayer;
+            if (checkWin()) {
+                endGame(false);
+            } else if (!gameState.includes('')) {
+                endGame(true);
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                status.textContent = `Player ${currentPlayer}'s turn`;
+            }
+        }
+
+        function checkWin() {
+            return winConditions.some(condition => {
+                const [a, b, c] = condition;
+                if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        function endGame(draw) {
+            gameActive = false;
+            if (draw) {
+                status.textContent = "It's a draw!";
+            } else {
+                status.textContent = `Player ${currentPlayer} wins!`;
+            }
+            const newGameBtn = document.createElement('button');
+            newGameBtn.textContent = 'Play Again';
+            newGameBtn.classList.add('play-again');
+            newGameBtn.addEventListener('click', restartGame);
+            document.querySelector('.container').appendChild(newGameBtn); // Append to container
+            newGameBtn.style.display = 'block'; // Display button
+            document.querySelector('.board').classList.add('blur'); // Add blur effect to board
+        }
+
+        function restartGame() {
+            document.querySelector('.board').classList.remove('blur'); // Remove blur effect
+            currentPlayer = 'X';
+            gameActive = true;
+            gameState = ['', '', '', '', '', '', '', '', ''];
+            status.textContent = `Player ${currentPlayer}'s turn`;
+            cells.forEach(cell => cell.textContent = '');
+            const newGameBtn = document.querySelector('.play-again');
+            if (newGameBtn) {
+                newGameBtn.parentNode.removeChild(newGameBtn);
+            }
+        }
+    </script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
